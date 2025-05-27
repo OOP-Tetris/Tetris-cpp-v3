@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Color.h"
 #include "Block.h"
 #include <stdio.h>
@@ -19,10 +19,10 @@ public:
     void SetColor(int color);
     void show_keys();
     int show_cur_block(Block& block);
-    int erase_cur_block(Block& block );
+    int erase_cur_block(Block& block);
     int show_next_block(Block& block, int level);
+    int show_keeped_block(Block& block, int level);
     int show_logo();
-    //일부 내용이 변경된 함수입니다 cpp파일에 설명이 적혀 있습니다
     int show_total_block(char total_block[21][14], int level);
     int show_gamestat(int level, int score, int lines_left);
     int show_clear_screen(int score);

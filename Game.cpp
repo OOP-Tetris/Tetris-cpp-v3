@@ -1,11 +1,12 @@
-#include"Game.h"
+﻿#include"Game.h"
 #include <iostream>
 #include<stdio.h>
 #define EXT_KEY			0xffffffe0	//확장키 인식값 
 #define KEY_LEFT		0x4b
 #define KEY_RIGHT		0x4d
 #define KEY_UP			0x48
-#define KEY_DOWN		0x50 
+#define KEY_DOWN		0x50
+#define K				0x6B
 
 Game::Game() {
 	printer = new Printer();
@@ -13,8 +14,8 @@ Game::Game() {
 
 void Game::run() {
 	printer->show_logo();
-	while (1)
-	{
+	while(1)
+	{  
 		score = 0;
 		lines = 0;
 		if (is_gameover == 3) {
@@ -30,16 +31,13 @@ void Game::run() {
 			init();
 		}
 		
-	
 		is_gameover = 0;
 
-		curr_block = new Block(stages->get_stick_rate(level));
-		//printer->show_next_block(*curr_block, level);
+        curr_block = new Block(stages->get_stick_rate(level));
+        
+        next_block = new Block(stages->get_stick_rate(level));
+        printer->show_next_block(*next_block, level);
 
-		next_block = new Block(stages->get_stick_rate(level));
-		printer->show_next_block(*next_block, level);
-
-		//printer->show_next_block(*next_block, level);
 		printer->show_total_block(total_block, level);
 
 		if (isReverseWorld(level)) {
@@ -104,7 +102,12 @@ void Game::run() {
 					while (_kbhit()) (void)_getch();
 				}
 
-				if (keytemp == 32)	//스페이스바를 눌렀을때
+				if (keytemp == K) {
+					keep();
+					continue;
+				}
+
+				if(keytemp == 32 )	//스페이스바를 눌렀을때
 				{
 					while (is_gameover == 0)
 					{
@@ -116,10 +119,9 @@ void Game::run() {
 					}
 					printer->show_cur_block(*curr_block);
 					while (_kbhit()) (void)_getch();
-
 				}
 			}
-			if (i % stages->get_speed(level) == 0)
+			if ( i%stages->get_speed(level) == 0)			// spacebar -> curr_block changed -> move -> new curr_block's y is under 0 -> game over (strike_check is 1 because..minus index )
 			{
 				if (isReverseWorld(level)) {
 					is_gameover = move_block_Reversed();
@@ -307,7 +309,7 @@ int Game::move_block()
 		delete curr_block;
 		curr_block = next_block;
 		//만약 클리어한 라인의 수가 깨야되는 줄의 반이라면 콤보가 발동해 다음블록은 무조건 일자 블록이 나온다
-		if (stages->get_clear_line(level) / lines == 2) {
+		if (lines != 0 &&  stages->get_clear_line(level) / lines == 2) {
 			next_block = new Block(stages->get_stick_rate(level), true);
 		}
 		next_block = new Block(stages->get_stick_rate(level));
@@ -375,7 +377,7 @@ int Game::move_block_Reversed()
 		curr_block = next_block;
 
 		//만약 클리어한 라인의 수가 깨야되는 줄의 반이라면 콤보가 발동해 다음블록은 무조건 일자 블록이 나온다
-		if (stages->get_clear_line(level) / lines == 2) {
+		if (lines != 0 && stages->get_clear_line(level) / lines == 2) {
 			next_block = new Block(stages->get_stick_rate(level), true);
 		}
 		printer->show_next_block(*next_block, level);
@@ -441,13 +443,16 @@ int Game::strike_check_Reversed()
 
 			if (((curr_block->get_x() + j) == 0) || ((curr_block->get_x() + j) == 13))
 				block_dat = 1;
+			else if (curr_block->get_y() + i > 0 && curr_block->get_x() + j > 0) {
+				block_dat = total_block[curr_block->get_y() + i][curr_block->get_x() + j];
+			}
 			else
 				block_dat = total_block[curr_block->get_y() + i][curr_block->get_x() + j];
 
 
 			if ((block_dat == 1) && (curr_block->get_number(i, j) == 1))																							//좌측벽의 좌표를 빼기위함
 			{
-				return 1;
+ 				return 1;
 			}
 		}
 	}
@@ -570,6 +575,40 @@ int Game::rotate() {
 	curr_block->rotate(old_angle);
 	return 0;
 }
+
+// 0: 현재 블럭 저장, 1: 킵했던 블럭 사용
+int Game::keep() {
+	if (keeped_block != nullptr) {
+		printer->erase_cur_block(*curr_block);
+		Block* temp = curr_block;
+		curr_block = keeped_block;
+		
+		printer->erase_cur_block(*keeped_block);
+
+		keeped_block = nullptr;
+		next_block = temp;
+
+		temp = nullptr;
+
+		printer->show_next_block(*next_block, level);
+		
+		curr_block->start();
+		return 1;
+	}
+
+	printer->erase_cur_block(*curr_block);
+	keeped_block = curr_block;
+	curr_block = next_block;
+
+	next_block = new Block(stages->get_stick_rate(level));
+	printer->show_next_block(*next_block, level);
+
+	printer->show_keeped_block(*keeped_block, level);
+
+	curr_block->start();
+	return 0;
+}
+
 
 //거꾸로 나라의 스테이지인지 여부를 확인하는 함수 추가됨
 bool Game::isReverseWorld(int level)

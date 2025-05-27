@@ -1,5 +1,5 @@
-#include "Printer.h"
-#include <iostream>
+﻿#include "Printer.h"
+#include "iostream"
 #define _CRT_SECURE_NO_WARNINGS
 
 Printer::Printer() : ab_x(5), ab_y(1) {}
@@ -157,6 +157,34 @@ int Printer::show_next_block(Block& block, int level)
 	return 0;
 }
 
+int Printer::show_keeped_block(Block& block, int level)
+{
+	int i, j;
+	SetColor((level + 1) % 6 + 1);
+	for (i = 1;i < 7;i++)
+	{
+		gotoxy(45, i);
+		for (j = 0;j < 8;j++)
+		{
+			if (i == 1 || i == 6 || j == 0 || j == 4)
+			{
+				printf("■");
+			}
+			else {
+				printf("  ");
+			}
+
+		}
+	}
+	block.rotate(0);
+	block.movetoxy(21, 1);
+
+	show_cur_block(block);
+	return 0;
+}
+
+
+
 //가장 처음 테트리스 로고와 시작창을 보이게 하는 함수
 int Printer::show_logo()
 {
@@ -233,7 +261,6 @@ int Printer::show_logo()
 int Printer::show_total_block(char total_block[21][14], int level) {
 	int i, j;
 	SetColor(DARK_GRAY);
-
 	for (i = 0;i < 21;i++)
 	{
 		for (j = 0;j < 14;j++)
@@ -257,22 +284,10 @@ int Printer::show_total_block(char total_block[21][14], int level) {
 
 		}
 	}
-	
-	//추가된 내용 거꾸로 나라의 경우에는 ■바닥이 반대에 존재해야 되기 때문에 거꾸로 나라 세 단계에 대해서 구현을 하였습니다 
-	if (level == 0 || level == 3 || level == 6) {
-		SetColor((level % 6) + 1);
-		for (j = 0;j < 14;j++) {
-			gotoxy((j * 2) + ab_x, ab_y);
-			printf("■");
-		}
-	}
 	SetColor(BLACK);
 	gotoxy(77, 23);
 	return 0;
 }
-
-
-
 
 //현재 게임의 진행상태를 보여주는 함수, 앞으로 깨야하는 줄의 수, 점수, 레벨을 보여줌
 int Printer::show_gamestat(int level, int score, int lines_left)

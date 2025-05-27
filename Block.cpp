@@ -1,5 +1,4 @@
-
-#include"Block.h"
+﻿#include"Block.h"
 
 Block::Block(int shape, int angle, int x, int y, bool combo) : block_shape(shape), block_angle(angle), block_x(x), block_y(y),combo(combo) {}
 
